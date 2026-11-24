@@ -317,6 +317,20 @@ body {
   color: $carbon-0;
 }
 
+/* Disabled (while editing): keep the label readable instead of
+   dark-on-dark at 30% opacity. */
+.button-play[disabled],
+.button-play:disabled {
+  background-color: $carbon-2;
+  border-color: $border-default;
+  color: $text-secondary;
+  opacity: 0.6;
+}
+
+.button-play[disabled] .fa-play {
+  color: $text-secondary;
+}
+
 .editing .fa-pencil {
   color: $orange-soft;
 }

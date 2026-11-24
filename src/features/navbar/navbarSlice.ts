@@ -3,8 +3,6 @@ import { createAppSlice } from "../../app/createAppSlice"
 
 export interface NavBarSliceState {
   status: "editing" | "started" | "stopped"
-  horizontallyFlipped: boolean
-  verticallyFlipped: boolean
   fontSize: number
   margin: number
   opacity: number
@@ -45,12 +43,10 @@ const detectLanguage = (): string => {
 
 const initialState: NavBarSliceState = {
   status: "stopped",
-  horizontallyFlipped: false,
-  verticallyFlipped: false,
-  fontSize: 30,
-  margin: 10,
-  opacity: 80,
-  scrollOffset: 100,
+  fontSize: 34,
+  margin: 160,
+  opacity: 100,
+  scrollOffset: 120,
   language: detectLanguage(),
   mode: "voice",
   speed: 50,
@@ -78,14 +74,6 @@ export const navbarSlice = createAppSlice({
 
     stop: create.reducer(state => {
       state.status = "stopped"
-    }),
-
-    flipHorizontally: create.reducer(state => {
-      state.horizontallyFlipped = !state.horizontallyFlipped
-    }),
-
-    flipVertically: create.reducer(state => {
-      state.verticallyFlipped = !state.verticallyFlipped
     }),
 
     setFontSize: create.reducer((state, action: PayloadAction<number>) => {
@@ -124,8 +112,6 @@ export const navbarSlice = createAppSlice({
     selectStatus: state => state.status,
     selectFontSize: state => state.fontSize,
     selectMargin: state => state.margin,
-    selectHorizontallyFlipped: state => state.horizontallyFlipped,
-    selectVerticallyFlipped: state => state.verticallyFlipped,
     selectOpacity: state => state.opacity,
     selectScrollOffset: state => state.scrollOffset,
     selectLanguage: state => state.language,
@@ -139,8 +125,6 @@ export const {
   toggleEdit,
   start,
   stop,
-  flipHorizontally,
-  flipVertically,
   setFontSize,
   setMargin,
   setOpacity,
@@ -154,8 +138,6 @@ export const {
   selectStatus,
   selectFontSize,
   selectMargin,
-  selectHorizontallyFlipped,
-  selectVerticallyFlipped,
   selectOpacity,
   selectScrollOffset,
   selectLanguage,

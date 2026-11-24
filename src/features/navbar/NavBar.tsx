@@ -1,32 +1,71 @@
 import { useAppDispatch, useAppSelector } from "../../app/hooks"
 
-import { startTeleprompter, stopTeleprompter, changeLanguage } from "../../app/thunks"
+import { startTeleprompter, stopTeleprompter } from "../../app/thunks"
 
 import {
   toggleEdit,
-  flipHorizontally,
-  flipVertically,
   setFontSize,
   setMargin,
   setOpacity,
   setScrollOffset,
-  setLanguage,
   setMode,
   setSpeed,
   selectStatus,
-  selectHorizontallyFlipped,
-  selectVerticallyFlipped,
   selectFontSize,
   selectMargin,
   selectOpacity,
   selectScrollOffset,
-  selectLanguage,
   selectMode,
   selectSpeed,
-  SUPPORTED_LOCALES,
 } from "./navbarSlice"
 
 import { resetTranscriptionIndices } from "../content/contentSlice"
+
+/** Slider with the label on top and an orange filled track. */
+const Slider = ({
+  icon,
+  label,
+  min,
+  max,
+  step,
+  value,
+  display,
+  onChange,
+  title,
+}: {
+  icon: string
+  label: string
+  min: number
+  max: number
+  step: number
+  value: number
+  display: string
+  onChange: (v: number) => void
+  title?: string
+}) => {
+  const pct = ((value - min) / (max - min)) * 100
+  return (
+    <div className="slider">
+      <span className="slider-label" title={title}>
+        <i className={`fa-solid ${icon}`} />
+        {label}
+      </span>
+      <div className="slider-wrap">
+        <div className="slider-track" />
+        <div className="slider-fill" style={{ width: `${pct}%` }} />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={e => onChange(parseInt(e.currentTarget.value, 10))}
+        />
+        <span className="slider-val">{display}</span>
+      </div>
+    </div>
+  )
+}
 
 export const NavBar = () => {
   const dispatch = useAppDispatch()
@@ -36,36 +75,34 @@ export const NavBar = () => {
   const margin = useAppSelector(selectMargin)
   const opacity = useAppSelector(selectOpacity)
   const scrollOffset = useAppSelector(selectScrollOffset)
-  const horizontallyFlipped = useAppSelector(selectHorizontallyFlipped)
-  const verticallyFlipped = useAppSelector(selectVerticallyFlipped)
-  const language = useAppSelector(selectLanguage)
   const mode = useAppSelector(selectMode)
   const speed = useAppSelector(selectSpeed)
 
+  const listening = status === "started" && mode === "voice"
+  const running = status === "started" && mode === "manual"
+
   return (
     <nav
-      className="navbar is-black has-text-light is-unselectable"
+      className="navbar is-unselectable"
       role="navigation"
       aria-label="main navigation"
     >
       <div className="navbar-brand">
-        <div className="navbar-item">
-          <div className="title has-text-grey">
-            <div>Voice-Activated Teleprompter</div>
-            <ul className="is-size-7">
-              <li className="first has-text-white">
-                &copy; Julien Lecomte (2024)
-              </li>
-              <li className="has-text-warning">
-                <i className="fa-solid fa-triangle-exclamation"></i> Only works
-                in Chrome
-              </li>
-              <li className="last">
-                <a href="https://www.paypal.com/donate/?hosted_button_id=49UXY8F6VVYFA">
-                  Support this project
-                </a>
-              </li>
-            </ul>
+        <div
+          className="navbar-item brand-block"
+          title="Fork de Voice-Activated Teleprompter (Julien Lecomte, MIT)"
+        >
+          <div className="brand-title">
+            <img src="icon.png" alt="" className="brand-logo" />
+            <span>Teleprompter</span>
+          </div>
+          <div className="brand-sub">
+            <span className={`state-dot ${listening || running ? "on" : ""}`} />
+            {status === "started"
+              ? mode === "voice"
+                ? "Escuchando"
+                : "Avanza manual"
+              : "Listo"}
           </div>
         </div>
       </div>
@@ -74,119 +111,87 @@ export const NavBar = () => {
           {status === "stopped" ? (
             <>
               <div className="navbar-item">
-                <div className="field">
-                  <div className="control">
-                    <div className="select is-small">
-                      <select
-                        value={language}
-                        onChange={e => {
-                          const newLanguage = e.currentTarget.value
-                          dispatch(setLanguage(newLanguage))
-                          dispatch(changeLanguage(newLanguage))
-                        }}
-                        title="Select Language"
-                      >
-                        {Object.keys(SUPPORTED_LOCALES).map(locale => {
-                          const label =
-                            SUPPORTED_LOCALES[
-                              locale as keyof typeof SUPPORTED_LOCALES
-                            ]
-                          return (
-                            <option key={locale} value={locale}>
-                              {label}
-                            </option>
-                          )
-                        })}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="navbar-item">
-                <div className="select is-small">
-                  <select
-                    value={mode}
-                    onChange={e =>
-                      dispatch(
-                        setMode(e.currentTarget.value as "voice" | "manual"),
-                      )
-                    }
-                    title="Scrolling mode"
+                <div className="mode-toggle">
+                  <button
+                    className={`mode-btn ${mode === "voice" ? "active" : ""}`}
+                    onClick={() => dispatch(setMode("voice"))}
+                    title="Scroll siguiendo tu voz"
                   >
-                    <option value="voice">Voice</option>
-                    <option value="manual">Manual (constant speed)</option>
-                  </select>
+                    <i className="fa-solid fa-microphone" />
+                    Voz
+                  </button>
+                  <button
+                    className={`mode-btn ${mode === "manual" ? "active" : ""}`}
+                    onClick={() => dispatch(setMode("manual"))}
+                    title="Scroll a velocidad constante"
+                  >
+                    <i className="fa-solid fa-gauge-high" />
+                    Manual
+                  </button>
                 </div>
               </div>
-              {mode === "manual" ? (
-                <div className="navbar-item slider">
-                  <span>Speed:</span>
-                  <input
-                    type="range"
-                    step="5"
-                    min="20"
-                    max="200"
-                    value={speed}
-                    onChange={e =>
-                      dispatch(setSpeed(parseInt(e.currentTarget.value, 10)))
-                    }
-                  />
-                </div>
-              ) : null}
-              <div className="navbar-item slider">
-                <span>Font size:</span>
-                <input
-                  type="range"
-                  step="5"
-                  min="10"
-                  max="200"
-                  value={fontSize}
-                  onChange={e =>
-                    dispatch(setFontSize(parseInt(e.currentTarget.value, 10)))
-                  }
-                />
-              </div>
-              <div className="navbar-item slider">
-                <span>Margin:</span>
-                <input
-                  type="range"
-                  step="10"
-                  min="0"
-                  max="500"
-                  value={margin}
-                  onChange={e =>
-                    dispatch(setMargin(parseInt(e.currentTarget.value, 10)))
-                  }
-                />
-              </div>
-              <div className="navbar-item slider">
-                <span>Brightness:</span>
-                <input
-                  type="range"
-                  step="10"
-                  min="0"
-                  max="100"
-                  value={opacity}
-                  onChange={e =>
-                    dispatch(setOpacity(parseInt(e.currentTarget.value, 10)))
-                  }
-                />
-              </div>
-              <div className="navbar-item slider">
-                <span>Line position:</span>
-                <input
-                  type="range"
-                  step="10"
-                  min="10"
-                  max="200"
-                  value={scrollOffset}
-                  onChange={e =>
-                    dispatch(setScrollOffset(parseInt(e.currentTarget.value, 10)))
-                  }
-                />
-              </div>
+
+              <span className="seg" />
+
+              <Slider
+                icon="fa-text-height"
+                label="Tamaño"
+                min={12}
+                max={200}
+                step={2}
+                value={fontSize}
+                display={`${fontSize}`}
+                onChange={v => dispatch(setFontSize(v))}
+                title="Tamaño de letra"
+              />
+              <Slider
+                icon="fa-arrows-left-right"
+                label="Margen"
+                min={0}
+                max={2000}
+                step={10}
+                value={margin}
+                display={`${margin}`}
+                onChange={v => dispatch(setMargin(v))}
+                title="Margen lateral"
+              />
+              <Slider
+                icon="fa-eye"
+                label="Opacidad"
+                min={20}
+                max={100}
+                step={5}
+                value={opacity}
+                display={`${opacity}%`}
+                onChange={v => dispatch(setOpacity(v))}
+                title="Opacidad del texto"
+              />
+              <Slider
+                icon="fa-align-center"
+                label="Línea"
+                min={0}
+                max={400}
+                step={5}
+                value={scrollOffset}
+                display={`${scrollOffset}`}
+                onChange={v => dispatch(setScrollOffset(v))}
+                title="Posición de la línea de lectura"
+              />
+              <Slider
+                icon="fa-gauge"
+                label="Velocidad"
+                min={20}
+                max={200}
+                step={5}
+                value={speed}
+                display={`${speed}`}
+                onChange={v => dispatch(setSpeed(v))}
+                title="Velocidad (modo manual)"
+              />
             </>
           ) : null}
+
+          <span className="seg" />
 
           <div className="buttons navbar-item">
             {status !== "started" ? (
@@ -194,47 +199,29 @@ export const NavBar = () => {
                 <button
                   className={`button ${status === "editing" ? "editing" : ""}`}
                   onClick={() => dispatch(toggleEdit())}
-                  title="Edit"
+                  title="Editar guion"
                 >
                   <span className="icon is-small">
                     <i className="fa-solid fa-pencil" />
                   </span>
-                </button>
-                <button
-                  className={`button ${horizontallyFlipped ? "horizontally-flipped" : ""}`}
-                  disabled={status !== "stopped"}
-                  onClick={() => dispatch(flipHorizontally())}
-                  title="Flip Text Horizontally"
-                >
-                  <span className="icon is-small">
-                    <i className="fa-solid fa-left-right" />
-                  </span>
-                </button>
-                <button
-                  className={`button ${verticallyFlipped ? "vertically-flipped" : ""}`}
-                  disabled={status !== "stopped"}
-                  onClick={() => dispatch(flipVertically())}
-                  title="Flip Text Vertically"
-                >
-                  <span className="icon is-small">
-                    <i className="fa-solid fa-up-down" />
-                  </span>
+                  <span>Editar</span>
                 </button>
                 <button
                   className="button"
                   disabled={status !== "stopped"}
                   onClick={() => dispatch(resetTranscriptionIndices())}
-                  title="Restart from the beginning"
+                  title="Volver al inicio del guion"
                 >
                   <span className="icon is-small">
                     <i className="fa-solid fa-arrows-rotate" />
                   </span>
+                  <span>Reiniciar</span>
                 </button>
               </>
             ) : null}
 
             <button
-              className="button"
+              className="button button-play"
               disabled={status === "editing"}
               onClick={() =>
                 dispatch(
@@ -242,14 +229,15 @@ export const NavBar = () => {
                 )
               }
               title={
-                status === "stopped" || status === "editing" ? "Start" : "Stop"
+                status === "stopped" || status === "editing" ? "Iniciar" : "Detener"
               }
             >
               <span className="icon is-small">
                 <i
-                  className={`fa-solid ${status === "stopped" || status === "editing" ? "fa-play" : "fa-stop"}`}
+                  className={`fa-solid ${status === "stopped" || status === "editing" ? "fa-play" : "fa-pause"}`}
                 />
               </span>
+              <span>{status === "stopped" || status === "editing" ? "Iniciar" : "Pausar"}</span>
             </button>
           </div>
         </div>

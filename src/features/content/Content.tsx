@@ -5,8 +5,6 @@ import { setContent, setFinalTranscriptIndex, setInterimTranscriptIndex } from "
 
 import {
   selectStatus,
-  selectHorizontallyFlipped,
-  selectVerticallyFlipped,
   selectFontSize,
   selectMargin,
   selectOpacity,
@@ -30,8 +28,6 @@ export const Content = () => {
   const margin = useAppSelector(selectMargin)
   const opacity = useAppSelector(selectOpacity)
   const scrollOffset = useAppSelector(selectScrollOffset)
-  const horizontallyFlipped = useAppSelector(selectHorizontallyFlipped)
-  const verticallyFlipped = useAppSelector(selectVerticallyFlipped)
   const rawText = useAppSelector(selectRawText)
   const textElements = useAppSelector(selectTextElements)
   const finalTranscriptIndex = useAppSelector(selectFinalTranscriptIndex)
@@ -149,7 +145,6 @@ export const Content = () => {
           style={{
             ...style,
             opacity: opacity / 100,
-            transform: `scale(${horizontallyFlipped ? "-1" : "1"}, ${verticallyFlipped ? "-1" : "1"})`,
           }}
         >
           {textElements.map((textElement, index, array) => {
@@ -175,7 +170,7 @@ export const Content = () => {
                       : interimTranscriptIndex > 0 &&
                         textElement.index <= interimTranscriptIndex + 1
                       ? "interim-transcript"
-                      : "has-text-white"
+                      : "future-text"
                 }
                 {...itemProps}
                 dangerouslySetInnerHTML={{

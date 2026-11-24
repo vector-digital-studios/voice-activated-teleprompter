@@ -41,6 +41,7 @@ body {
 
 .content-area {
   height: 100%;
+  position: relative;
 }
 
 /* NavBar styles */
@@ -115,6 +116,7 @@ input[type="range"] {
 /* Content styles */
 
 .content {
+  position: relative; // offsetTop of words is measured against this box
   overflow: auto;
   background-color: $black;
   border: none;
@@ -140,6 +142,26 @@ div.content {
 
 .interim-transcript {
   color: $yellow;
+}
+
+/* Word currently being read */
+.active-word {
+  color: $yellow;
+  background: rgba(255, 221, 87, 0.18);
+  border-radius: 6px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Horizontal reading guide (see Content.tsx) */
+.guide-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 221, 87, 0.35);
+  pointer-events: none;
+  z-index: 5;
 }
 
 .content > span:hover {

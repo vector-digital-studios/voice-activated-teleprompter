@@ -125,6 +125,16 @@ export const Content = () => {
 
   return (
     <main className="content-area">
+      {status === "started" ? (
+        // Reading guide: a thin line at the height where the current line is
+        // kept (the "Line position" setting). It sits outside the scrolling
+        // container so it stays put while the text moves.
+        <div
+          className="guide-line"
+          aria-hidden="true"
+          style={{ top: `${scrollOffset}px` }}
+        />
+      ) : null}
       {status === "editing" ? (
         <textarea
           className="content"
@@ -159,7 +169,10 @@ export const Content = () => {
                   finalTranscriptIndex > 0 &&
                   textElement.index <= finalTranscriptIndex + 1
                     ? "final-transcript"
-                    : interimTranscriptIndex > 0 &&
+                    : interimTranscriptIndex >= 0 &&
+                        textElement.index === interimTranscriptIndex + 1
+                      ? "active-word"
+                      : interimTranscriptIndex > 0 &&
                         textElement.index <= interimTranscriptIndex + 1
                       ? "interim-transcript"
                       : "has-text-white"

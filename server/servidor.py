@@ -48,8 +48,9 @@ def ips_locales() -> list[str]:
         pass
     try:
         # connect() en UDP no transmite nada; solo elige la interfaz de salida.
+        # 192.0.2.1 es una dirección reservada para documentación (RFC 5737).
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("10.255.255.255", 1))
+            s.connect(("192.0.2.1", 9))
             ips.add(s.getsockname()[0])
     except OSError:
         pass

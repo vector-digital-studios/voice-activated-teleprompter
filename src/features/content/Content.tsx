@@ -33,6 +33,17 @@ export const Content = () => {
   const finalTranscriptIndex = useAppSelector(selectFinalTranscriptIndex)
   const interimTranscriptIndex = useAppSelector(selectInterimTranscriptIndex)
 
+  // The matcher returns the index of the last recognized word (a TOKEN).
+  // Highlight that word; if the index points at a delimiter (manual mode
+  // advances token by token), fall back to the word before it.
+  let activeWordIndex = -1
+  if (status === "started" && interimTranscriptIndex >= 0) {
+    activeWordIndex =
+      textElements[interimTranscriptIndex]?.type === "TOKEN"
+        ? interimTranscriptIndex
+        : interimTranscriptIndex - 1
+  }
+
   const style = {
     fontSize: `${fontSize}px`,
     padding: `0 ${margin}px`,
@@ -161,12 +172,11 @@ export const Content = () => {
                   dispatch(setInterimTranscriptIndex(index - 1))
                 }}
                 className={
-                  finalTranscriptIndex > 0 &&
-                  textElement.index <= finalTranscriptIndex + 1
-                    ? "final-transcript"
-                    : interimTranscriptIndex >= 0 &&
-                        textElement.index === interimTranscriptIndex + 1
-                      ? "active-word"
+                  textElement.index === activeWordIndex
+                    ? "active-word"
+                    : finalTranscriptIndex > 0 &&
+                        textElement.index <= finalTranscriptIndex + 1
+                      ? "final-transcript"
                       : interimTranscriptIndex > 0 &&
                         textElement.index <= interimTranscriptIndex + 1
                       ? "interim-transcript"

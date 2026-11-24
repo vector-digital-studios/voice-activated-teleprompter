@@ -8,11 +8,36 @@ import SpeechRecognizer from "../lib/speech-recognizer"
 import { computeSpeechRecognitionTokenIndex } from "../lib/speech-matcher"
 
 let speechRecognizer: SpeechRecognizer | null = null
+let manualTimer: ReturnType<typeof setInterval> | null = null
 
 export const startTeleprompter = (): AppThunk => (dispatch, getState) => {
   dispatch(start())
 
-  const { language } = getState().navbar
+  const { language, mode, speed } = getState().navbar
+
+  if (mode === "manual") {
+    // Manual mode: advance at a constant pace, no microphone needed.
+    // speed (20-200, default 50) = tokens per second x 10. Words and the
+    // delimiters between them are separate tokens, so 50 -> 5 tokens/s,
+    // roughly 2.5 words/s (~150 wpm). A tick runs every 100 ms.
+    const { textElements, finalTranscriptIndex } = getState().content
+    const maxIndex = textElements.length - 1
+    const tokensPerTick = Math.max(0.15, speed / 100)
+    // Start from the current position (e.g. after clicking on a word).
+    let position = Math.max(0, finalTranscriptIndex)
+
+    manualTimer = setInterval(() => {
+      position += tokensPerTick
+      const target = Math.min(maxIndex, Math.floor(position))
+      const { finalTranscriptIndex: current } = getState().content
+      if (target > current) {
+        dispatch(setFinalTranscriptIndex(target))
+        dispatch(setInterimTranscriptIndex(target))
+      }
+    }, 100)
+    return
+  }
+
   speechRecognizer = new SpeechRecognizer(language)
 
   if (!speechRecognizer.getIsSupported()) {
@@ -59,6 +84,10 @@ export const stopTeleprompter = (): AppThunk => dispatch => {
   if (speechRecognizer !== null) {
     speechRecognizer.stop()
     speechRecognizer = null
+  }
+  if (manualTimer !== null) {
+    clearInterval(manualTimer)
+    manualTimer = null
   }
 
   dispatch(stop())

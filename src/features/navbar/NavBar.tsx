@@ -11,6 +11,8 @@ import {
   setOpacity,
   setScrollOffset,
   setLanguage,
+  setMode,
+  setSpeed,
   selectStatus,
   selectHorizontallyFlipped,
   selectVerticallyFlipped,
@@ -19,6 +21,8 @@ import {
   selectOpacity,
   selectScrollOffset,
   selectLanguage,
+  selectMode,
+  selectSpeed,
   SUPPORTED_LOCALES,
 } from "./navbarSlice"
 
@@ -35,6 +39,8 @@ export const NavBar = () => {
   const horizontallyFlipped = useAppSelector(selectHorizontallyFlipped)
   const verticallyFlipped = useAppSelector(selectVerticallyFlipped)
   const language = useAppSelector(selectLanguage)
+  const mode = useAppSelector(selectMode)
+  const speed = useAppSelector(selectSpeed)
 
   return (
     <nav
@@ -96,6 +102,37 @@ export const NavBar = () => {
                   </div>
                 </div>
               </div>
+              <div className="navbar-item">
+                <div className="select is-small">
+                  <select
+                    value={mode}
+                    onChange={e =>
+                      dispatch(
+                        setMode(e.currentTarget.value as "voice" | "manual"),
+                      )
+                    }
+                    title="Scrolling mode"
+                  >
+                    <option value="voice">Voice</option>
+                    <option value="manual">Manual (constant speed)</option>
+                  </select>
+                </div>
+              </div>
+              {mode === "manual" ? (
+                <div className="navbar-item slider">
+                  <span>Speed:</span>
+                  <input
+                    type="range"
+                    step="5"
+                    min="20"
+                    max="200"
+                    value={speed}
+                    onChange={e =>
+                      dispatch(setSpeed(parseInt(e.currentTarget.value, 10)))
+                    }
+                  />
+                </div>
+              ) : null}
               <div className="navbar-item slider">
                 <span>Font size:</span>
                 <input

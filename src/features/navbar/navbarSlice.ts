@@ -10,6 +10,10 @@ export interface NavBarSliceState {
   opacity: number
   scrollOffset: number
   language: string
+  /** "voice" = follow the speaker, "manual" = scroll at a constant pace */
+  mode: "voice" | "manual"
+  /** manual-mode speed (20-200) */
+  speed: number
 }
 
 export const SUPPORTED_LOCALES = {
@@ -48,6 +52,8 @@ const initialState: NavBarSliceState = {
   opacity: 80,
   scrollOffset: 100,
   language: detectLanguage(),
+  mode: "voice",
+  speed: 50,
 }
 
 export const navbarSlice = createAppSlice({
@@ -98,6 +104,16 @@ export const navbarSlice = createAppSlice({
       state.scrollOffset = action.payload
     }),
 
+    setMode: create.reducer(
+      (state, action: PayloadAction<"voice" | "manual">) => {
+        state.mode = action.payload
+      },
+    ),
+
+    setSpeed: create.reducer((state, action: PayloadAction<number>) => {
+      state.speed = action.payload
+    }),
+
     setLanguage: create.reducer((state, action: PayloadAction<string>) => {
       state.language = action.payload
       localStorage.setItem("teleprompter-language", action.payload)
@@ -113,6 +129,8 @@ export const navbarSlice = createAppSlice({
     selectOpacity: state => state.opacity,
     selectScrollOffset: state => state.scrollOffset,
     selectLanguage: state => state.language,
+    selectMode: state => state.mode,
+    selectSpeed: state => state.speed,
   },
 })
 
@@ -127,6 +145,8 @@ export const {
   setMargin,
   setOpacity,
   setScrollOffset,
+  setMode,
+  setSpeed,
   setLanguage,
 } = navbarSlice.actions
 
@@ -139,4 +159,6 @@ export const {
   selectOpacity,
   selectScrollOffset,
   selectLanguage,
+  selectMode,
+  selectSpeed,
 } = navbarSlice.selectors

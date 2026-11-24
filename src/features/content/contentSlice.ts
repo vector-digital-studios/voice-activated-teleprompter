@@ -10,7 +10,7 @@ export interface ContentSliceState {
   interimTranscriptIndex: number
 }
 
-const initialText = 'Click on the "Edit" button and paste your content here...'
+const initialText = 'Pulsa el botón "Editar" y pega aquí tu guion...'
 
 const initialState: ContentSliceState = {
   rawText: initialText,

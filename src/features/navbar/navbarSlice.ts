@@ -14,32 +14,8 @@ export interface NavBarSliceState {
   speed: number
 }
 
-export const SUPPORTED_LOCALES = {
-  "nl-NL": "🇳🇱 Dutch (Netherlands)",
-  "en-US": "🇺🇸 English (USA)",
-  "fr-FR": "🇫🇷 French (France)",
-  "de-DE": "🇩🇪 German (Germany)",
-  "it-IT": "🇮🇹 Italian (Italy)",
-  "pt-BR": "🇧🇷 Portuguese (Brazil)",
-  "es-ES": "🇪🇸 Spanish (Spain)",
-  "sv-SE": "🇸🇪 Swedish (Sweden)",
-}
-
-// Detect browser language and default to pt-BR if Portuguese, otherwise en-US
-const detectLanguage = (): string => {
-  const savedLanguage = localStorage.getItem("teleprompter-language")
-  if (savedLanguage) {
-    return savedLanguage
-  }
-
-  if (SUPPORTED_LOCALES.hasOwnProperty(navigator.language)) {
-    return navigator.language
-  }
-
-  // TODO: Try to find a "best match", for example if `navigator.language` is `fr-CA` or just `fr`...
-
-  return "en-US"
-}
+// This fork is Spanish-first: speech recognition always uses es-ES.
+export const LANGUAGE = "es-ES"
 
 const initialState: NavBarSliceState = {
   status: "stopped",
@@ -47,7 +23,7 @@ const initialState: NavBarSliceState = {
   margin: 160,
   opacity: 100,
   scrollOffset: 120,
-  language: detectLanguage(),
+  language: LANGUAGE,
   mode: "voice",
   speed: 50,
 }
@@ -104,7 +80,6 @@ export const navbarSlice = createAppSlice({
 
     setLanguage: create.reducer((state, action: PayloadAction<string>) => {
       state.language = action.payload
-      localStorage.setItem("teleprompter-language", action.payload)
     }),
   }),
 
